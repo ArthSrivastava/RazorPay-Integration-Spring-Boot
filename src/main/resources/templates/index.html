@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Razor Pay Integration</title>
+</head>
+<body>
+    <div>
+        <label for="input--amt">Enter amount</label><input type="text" id="input--amt" placeholder="Enter amount here"/>
+        <button id="pay--btn">Pay</button>
+    </div>
+    <script>
+        let payBox = document.getElementById("input--amt");
+        let payBtn = document.getElementById("pay--btn");
+
+        payBtn.addEventListener('click', async () => {
+            console.log("HI")
+            let amt = payBox.value;
+            console.log(amt);
+
+            if(amt === "" || amt === null) {
+                alert("Amount is required!");
+                return;
+            }
+
+            await fetch("http://localhost:8080/payment/order", {
+                method: "POST",
+                headers: {
+                    'Content-type': 'application/json'
+                },
+                body: JSON.stringify({amount: amt})
+            })
+                .then(response => response.json())
+                .then((data) => {
+                    const options = {
+                        "key": "enter rzp key here",
+                        "amount": data.amount,
+                        "currency": "INR",
+                        "name": "Test",
+                        "description": "Test description",
+                        "image": "https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.digitaldeployment.com%2Fpost%2Fimage-dimensions&psig=AOvVaw2PGa-fQd4R79uUDr2RMujv&ust=1680419884988000&source=images&cd=vfe&ved=0CBAQjRxqFwoTCNiMuYSSiP4CFQAAAAAdAAAAABAE",
+                        "order_id": data.id,
+                        "handler": (response) => {
+                            console.log(response.razorpay_payment_id);
+                            console.log(response.razorpay_order_id);
+                            console.log(response.razorpay_signature)
+                            console.log("Success!");
+                        },
+                        "notes": {
+                            "address": "Razorpay Corporate Office"
+                        },
+                        "theme": {
+                            "color": "#3399cc"
+                        }
+                    };
+                    const rzp1 = new Razorpay(options);
+                    rzp1.on('payment.failed', function (response){
+                        console.log(response.error.code);
+                        console.log(response.error.description);
+                        console.log(response.error.source);
+                        console.log(response.error.step);
+                        console.log(response.error.reason);
+                        console.log(response.error.metadata.order_id);
+                        console.log(response.error.metadata.payment_id);
+                        alert("Payment failed!");
+                    });
+                    rzp1.open();
+                })
+                .catch(error => {
+                    console.log("Error:", error);
+                })
+
+        })
+    </script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+</body>
+</html>

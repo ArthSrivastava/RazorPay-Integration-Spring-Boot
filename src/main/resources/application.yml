@@ -1,0 +1,7 @@
+rzp:
+  key:
+    id: ${"rzp_key_id"}
+    secret: ${"rzp_key_secret"}
+  currency: INR
+  company:
+    name: theSnoozingTurtle
